@@ -1,10 +1,9 @@
-// vacationController.js
-
 const db = require('../db');
 
 const getVacationResults = async () => {
     try {
         const [preferences] = await db.query('SELECT * FROM tbl_43_preferences');
+        console.log('Preferences fetched:', preferences);
 
         if (preferences.length < 5) {
             return { message: 'Not all users have submitted their preferences.' };
@@ -47,7 +46,7 @@ const getVacationResults = async () => {
             end_date: formattedEndDate
         };
     } catch (err) {
-        console.error(err);
+        console.error('Error fetching vacation results:', err);
         return { error: err.message };
     }
 };
