@@ -1,8 +1,8 @@
-const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { storeToken } = require('../middleware/authMiddleware');
+const User = require('../models/userModel');
 
+// Register a new user
 exports.register = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -12,12 +12,15 @@ exports.register = async (req, res) => {
             return res.status(400).json({ error: 'Username already exists' });
         }
 
-        await User.create({ username, password });
+        const hashedPassword = bcrypt.hashSync(password, 8); // Hash the password
+        await User.create({ username, password: hashedPassword });
         res.status(201).json({ message: 'User registered successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+
+// authController.js
 
 exports.login = async (req, res) => {
     try {
@@ -36,9 +39,14 @@ exports.login = async (req, res) => {
         }
 
         const token = crypto.randomBytes(8).toString('hex'); // Generate a 16-character (8-byte) token
-        storeToken(token, user); // Store the token with the user data
+
+        // Update the user's access code in the database
+        await User.updateAccessCode(user.id, token);
+        console.log(`Access code updated for user ${user.id}: ${token}`); // Add this line for debugging
+
         res.json({ token });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
+

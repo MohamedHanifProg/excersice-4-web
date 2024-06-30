@@ -1,8 +1,10 @@
-const { check, validationResult } = require('express-validator');
+const { check, validationResult } = require('express-validator'); // Add this line
 const Preferences = require('../models/preferencesModel');
+const User = require('../models/userModel');
 const fs = require('fs');
 const path = require('path');
 
+// Fetch all preferences
 exports.getAllPreferences = async (req, res) => {
     try {
         const results = await Preferences.findAll();
@@ -12,6 +14,7 @@ exports.getAllPreferences = async (req, res) => {
     }
 };
 
+// Add or update a preference
 exports.addOrUpdatePreference = [
     // Validation rules
     check('user_id').isInt().withMessage('User ID must be an integer'),
@@ -31,6 +34,7 @@ exports.addOrUpdatePreference = [
         }
         return true;
     }),
+    check('access_code').isString().withMessage('Access code must be a string'),
 
     // Middleware to handle validation results
     (req, res, next) => {
@@ -44,8 +48,32 @@ exports.addOrUpdatePreference = [
     // Controller logic
     async (req, res) => {
         try {
-            const { user_id, start_date, end_date, destination, vacation_type } = req.body;
-            const preference = { user_id, start_date, end_date, destination, vacation_type };
+            const { user_id, start_date, end_date, destination, vacation_type, access_code } = req.body;
+            const user = await User.findById(user_id);
+
+            if (!user) {
+                return res.status(400).json({ error: 'User not found' });
+            }
+
+            if (user.access_code !== access_code) {
+                return res.status(400).json({ error: 'Invalid access code' });
+            }
+
+            const preference = {
+                user_id,
+                start_date: new Date(start_date).toISOString().split('T')[0],
+                end_date: new Date(end_date).toISOString().split('T')[0],
+                destination,
+                vacation_type
+            };
+
+            // Ensure vacation duration is not more than a week
+            const startDate = new Date(start_date);
+            const endDate = new Date(end_date);
+            const duration = (endDate - startDate) / (1000 * 60 * 60 * 24);
+            if (duration > 7) {
+                return res.status(400).json({ error: 'Vacation duration cannot exceed one week' });
+            }
 
             await Preferences.createOrUpdate(preference);
             res.status(201).json({ message: 'Preference added/updated successfully' });
@@ -54,46 +82,3 @@ exports.addOrUpdatePreference = [
         }
     }
 ];
-
-exports.getVacation = async (req, res) => {
-    try {
-        const preferences = await Preferences.findAll();
-
-        if (preferences.length < 5) {
-            return res.status(400).json({ message: 'Not all users have submitted their preferences.' });
-        }
-
-        const destinations = {};
-        const vacationTypes = {};
-        let startDate = null;
-        let endDate = null;
-
-        preferences.forEach(pref => {
-            destinations[pref.destination] = (destinations[pref.destination] || 0) + 1;
-            vacationTypes[pref.vacation_type] = (vacationTypes[pref.vacation_type] || 0) + 1;
-
-            if (!startDate || new Date(pref.start_date) > new Date(startDate)) {
-                startDate = pref.start_date;
-            }
-            if (!endDate || new Date(pref.end_date) < new Date(endDate)) {
-                endDate = pref.end_date;
-            }
-        });
-
-        const selectedDestination = Object.keys(destinations).reduce((a, b) => destinations[a] > destinations[b] ? a : b);
-        const selectedVacationType = Object.keys(vacationTypes).reduce((a, b) => vacationTypes[a] > vacationTypes[b] ? a : b);
-
-        if (new Date(startDate) > new Date(endDate)) {
-            return res.status(400).json({ message: 'No common date range found.' });
-        }
-
-        res.json({
-            destination: selectedDestination,
-            vacation_type: selectedVacationType,
-            start_date: startDate,
-            end_date: endDate
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};

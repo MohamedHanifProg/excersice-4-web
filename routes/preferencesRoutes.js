@@ -1,11 +1,11 @@
+// preferencesRoutes.js
+
 const express = require('express');
-const getVacationResults = require('../controllers/vacationController');
+const { getAllPreferences, addOrUpdatePreference } = require('../controllers/preferencesController');
 
 const router = express.Router();
 
-router.get('/results', async (req, res) => {
-    const results = await getVacationResults();
-    res.json(results);
-});
+router.get('/', getAllPreferences); // New route for fetching all preferences
+router.post('/', addOrUpdatePreference);
 
 module.exports = router;
