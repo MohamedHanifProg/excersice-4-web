@@ -10,7 +10,7 @@ app.use(express.json());
 
 const authRoutes = require('./routes/authRoutes');
 const preferencesRoutes = require('./routes/preferencesRoutes');
-const vacationRoutes = require('./routes/vacationRoutes'); // Ensure this path is correct
+const vacationRoutes = require('./routes/vacationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/preferences', preferencesRoutes);

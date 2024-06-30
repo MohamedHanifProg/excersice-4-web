@@ -1,5 +1,3 @@
-// preferencesModel.js
-
 const db = require('../db');
 
 class Preferences {

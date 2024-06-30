@@ -1,4 +1,4 @@
-const { check, validationResult } = require('express-validator'); // Add this line
+const { check, validationResult } = require('express-validator');
 const Preferences = require('../models/preferencesModel');
 const User = require('../models/userModel');
 const fs = require('fs');
