@@ -1,10 +1,11 @@
 const express = require('express');
-const router = express.Router();
-const preferencesController = require('../controllers/preferencesController');
-const authMiddleware = require('../middleware/authMiddleware');
+const getVacationResults = require('../controllers/vacationController');
 
-router.get('/', authMiddleware, preferencesController.getAllPreferences);
-router.post('/', authMiddleware, preferencesController.addOrUpdatePreference);
-router.get('/vacation', authMiddleware, preferencesController.getVacation); // New route for getting vacation details
+const router = express.Router();
+
+router.get('/results', async (req, res) => {
+    const results = await getVacationResults();
+    res.json(results);
+});
 
 module.exports = router;

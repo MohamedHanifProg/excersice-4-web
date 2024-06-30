@@ -1,8 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 
-dotenv.config(); // Load environment variables
-const db = require('./db'); // Ensure this path is correct based on your project structure
+dotenv.config();
+const db = require('./db');
 
 const app = express();
 const port = process.env.PORT || 3000;
