@@ -16,6 +16,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/preferences', preferencesRoutes);
 app.use('/api/vacation', vacationRoutes);
 
+// Handle root route to avoid 404 errors on root
+app.get('/', (req, res) => {
+    res.send('API is running...');
+});
+
 // Handle undefined routes (all other routes)
 app.use((req, res) => {
     res.status(404).json({ error: 'Not Found' });
@@ -24,3 +29,4 @@ app.use((req, res) => {
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
+g
