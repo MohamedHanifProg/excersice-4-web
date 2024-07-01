@@ -24,4 +24,3 @@ class User {
 }
 
 module.exports = User;
-// succes api is running on render 
