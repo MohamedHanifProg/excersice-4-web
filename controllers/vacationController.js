@@ -1,4 +1,5 @@
 const db = require('../db');
+const axios = require('axios');
 
 const getVacationResults = async () => {
     try {
@@ -39,12 +40,32 @@ const getVacationResults = async () => {
         const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
         const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
 
-        return {
-            destination: selectedDestination,
-            vacation_type: selectedVacationType,
-            start_date: formattedStartDate,
-            end_date: formattedEndDate
-        };
+        // Fetch weather data from OpenWeatherMap API
+        const weatherApiKey = '61db8a5831cd04e908d1bf984948a578'; // Your OpenWeatherMap API key
+        try {
+            const weatherResponse = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
+                params: {
+                    q: selectedDestination,
+                    appid: weatherApiKey,
+                    units: 'metric'
+                }
+            });
+            const weatherData = weatherResponse.data;
+
+            return {
+                destination: selectedDestination,
+                vacation_type: selectedVacationType,
+                start_date: formattedStartDate,
+                end_date: formattedEndDate,
+                weather: {
+                    temperature: weatherData.main.temp,
+                    description: weatherData.weather[0].description
+                }
+            };
+        } catch (weatherError) {
+            console.error('Weather API error:', weatherError.response ? weatherError.response.data : weatherError.message);
+            return { error: 'Weather API error' };
+        }
     } catch (err) {
         console.error('Error fetching vacation results:', err);
         return { error: err.message };
