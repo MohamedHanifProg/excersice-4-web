@@ -3,7 +3,6 @@ const axios = require('axios');
 
 const getVacationResults = async () => {
     try {
-        console.log('Attempting to fetch preferences from the database...');
         const [preferences] = await db.query('SELECT * FROM tbl_43_preferences');
         console.log('Preferences fetched:', preferences);
 
@@ -28,23 +27,21 @@ const getVacationResults = async () => {
             }
         });
 
-        console.log('Destination counts:', destinationCount);
-        console.log('Vacation type counts:', vacationTypeCount);
-
+        // Determine majority or default to the first user's preference
         const selectedDestination = Object.keys(destinationCount).reduce((a, b) => destinationCount[a] > destinationCount[b] ? a : (destinationCount[a] === destinationCount[b] ? (preferences[0].destination === a ? a : b) : b), preferences[0].destination);
         const selectedVacationType = Object.keys(vacationTypeCount).reduce((a, b) => vacationTypeCount[a] > vacationTypeCount[b] ? a : (vacationTypeCount[a] === vacationTypeCount[b] ? (preferences[0].vacation_type === a ? a : b) : b), preferences[0].vacation_type);
 
-        console.log('Selected destination:', selectedDestination);
-        console.log('Selected vacation type:', selectedVacationType);
-
+        // Check if there is a valid date range
         if (new Date(startDate) > new Date(endDate)) {
             return { message: 'No common date range found.' };
         }
 
+        // Format dates to a more readable format
         const formattedStartDate = new Date(startDate).toISOString().split('T')[0];
         const formattedEndDate = new Date(endDate).toISOString().split('T')[0];
 
-        const weatherApiKey = process.env.WEATHER_API_KEY; // Use environment variable for the API key
+        // Fetch weather data from OpenWeatherMap API
+        const weatherApiKey = '61db8a5831cd04e908d1bf984948a578'; // Your OpenWeatherMap API key
         try {
             const weatherResponse = await axios.get('https://api.openweathermap.org/data/2.5/weather', {
                 params: {
