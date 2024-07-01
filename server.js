@@ -14,7 +14,7 @@ const vacationRoutes = require('./routes/vacationRoutes');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/preferences', preferencesRoutes);
-app.use('/api/vacation', vacationRoutes); // This line includes the vacation routes
+app.use('/api/vacation', vacationRoutes);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
